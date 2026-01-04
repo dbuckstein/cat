@@ -15,27 +15,29 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
-* cat.c
-* Main test file.
+* cat_image.c
+* Image implementation.
 */
 
-#include "cat/cat.h"
+#include "cat/utility/cat_image.h"
+#include "cat/cat_platform.inl"
 
 
-extern void cat_time_test(void);
-extern void cat_console_test(void);
-extern void cat_memory_test(void);
-extern void cat_thread_test(void);
-extern void cat_image_test(void);
+cat_implementation_begin;
 
 
-cat_noinl int cat_test_all(int const argc, char const* const argv[])
+#include "cat/utility/cat_time.h"
+#include "cat/utility/cat_console.h"
+
+cat_noinl void cat_image_test(void)
 {
-    unused2(argc, argv);
-    cat_time_test();
-    cat_console_test();
-    cat_memory_test();
-    cat_thread_test();
-    cat_image_test();
-    return 0;
+    cat_time_t const t0 = cat_platform_time();
+    cat_time_t t1 = t0;
+
+    cat_console_clear();
+    printf("\nImage: \n Draw time: %"PRIi64, (t1 - t0));
+    cat_platform_sleep(cat_platform_time_rate());
 }
+
+
+cat_implementation_end;
