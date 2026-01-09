@@ -61,10 +61,10 @@ cat_decl bool cat_image_destroy(cat_image_t* const p_image);
 //! \brief Save image(s) in convenient NetPBM format(s).
 //! \param p_image Pointer to active image descriptor (all fields are non-zero).
 //! \param directory Save directory c-string (not including file name).
-//! \param file_name Save file name c-string (not including file path).
+//! \param file_name_noext Save file name c-string (not including directory or extension).
 //! \param using_alpha Alpha flag, true if alpha channel should be saved.
 //! \return True if image saved successfully.
-cat_decl bool cat_image_save_netpbm(cat_image_t const* const p_image, cstr_t const directory, cstr_t const file_name, bool const using_alpha);
+cat_decl bool cat_image_save_netpbm(cat_image_t const* const p_image, cstr_t const directory, cstr_t const file_name_noext, bool const using_alpha);
 
 //! \fn cat_image_pixel_color
 //! \brief Create encoded pixel color given individual channels.
@@ -80,8 +80,17 @@ cat_decl cat_pixel_color_t cat_image_pixel_color(uint16_t const r, uint16_t cons
 //! \param pos_x Horizontal position of pixel in image; zero is left edge. Pass negative value for all columns.
 //! \param pos_y Vertical position of pixel; zero is top edge. Pass negative value for all rows.
 //! \param pixel_color Encoded color of pixel.
-//! \return True if pixel set successfully.
+//! \return True if pixel written successfully.
 cat_decl bool cat_image_set_pixel(cat_image_t const* const p_image, int32_t const pos_x, int32_t const pos_y, cat_pixel_color_t const pixel_color);
+
+//! \fn cat_image_get_pixel
+//! \brief Get color for pixel in image.
+//! \param p_image Pointer to active image descriptor (all fields are non-zero).
+//! \param p_pixel_color Pointer to output pixel color.
+//! \param pos_x Horizontal position of pixel in image; zero is left edge.
+//! \param pos_y Vertical position of pixel; zero is top edge.
+//! \return True if pixel read successfully.
+cat_decl bool cat_image_get_pixel(cat_image_t const* const p_image, cat_pixel_color_t* const p_pixel_color, int32_t const pos_x, int32_t const pos_y);
 
 
 cat_interface_end;
