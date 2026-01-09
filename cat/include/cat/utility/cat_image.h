@@ -37,10 +37,21 @@ typedef uint64_t cat_pixel_color_t;
 //! \brief Image descriptor.
 typedef struct cat_image_s
 {
-    uint32_t           image_width;   //< Width of image in pixels.
-    uint32_t           image_height;  //< Height of image in pixels.
-    cat_pixel_color_t* p_image_pixels;//< Pixel data.
+    uint32_t           image_width;     //< Width of image in pixels.
+    uint32_t           image_height;    //< Height of image in pixels.
+    float              image_width_inv; //< Reciprocal of image width.
+    float              image_height_inv;//< Reciprocal of image height.
+    cat_pixel_color_t* p_image_pixels;  //< Pixel data.
 } cat_image_t;
+
+//! \struct cat_viewport_s
+//! \brief Viewport descriptor to map image to 3D space.
+typedef struct cat_viewport_s
+{
+    float viewport_height;  //< Height of viewing plane in scene units.
+    float viewport_aspect;  //< Aspect ratio of viewing plane (width/height).
+    float viewport_distance;//< Distance from viewer to viewing plane in scene units.
+} cat_viewport_t;
 
 
 //! \fn cat_image_create
@@ -56,6 +67,18 @@ cat_decl bool cat_image_create(cat_image_t* const p_image, uint32_t const image_
 //! \param p_image Pointer to active image descriptor (all fields are non-zero).
 //! \return True if image destroyed successfully.
 cat_decl bool cat_image_destroy(cat_image_t* const p_image);
+
+//! \fn cat_image_valid
+//! \brief Check if image is properly initialized (all fields are non-zero).
+//! \param p_image Pointer to image descriptor.
+//! \return True if image is valid.
+cat_decl bool cat_image_valid(cat_image_t const* const p_image);
+
+//! \fn cat_image_aspect
+//! \brief Compute aspect ratio of image.
+//! \param p_image Pointer to active image descriptor (all fields are non-zero).
+//! \return Aspect ratio.
+cat_decl float cat_image_aspect(cat_image_t const* const p_image);
 
 //! \fn cat_image_save_netpbm
 //! \brief Save image(s) in convenient NetPBM format(s).
@@ -85,12 +108,29 @@ cat_decl bool cat_image_set_pixel(cat_image_t const* const p_image, int32_t cons
 
 //! \fn cat_image_get_pixel
 //! \brief Get color for pixel in image.
+//! \param p_pixel_color_out Pointer to output encoded pixel color.
 //! \param p_image Pointer to active image descriptor (all fields are non-zero).
-//! \param p_pixel_color Pointer to output pixel color.
 //! \param pos_x Horizontal position of pixel in image; zero is left edge.
 //! \param pos_y Vertical position of pixel; zero is top edge.
 //! \return True if pixel read successfully.
-cat_decl bool cat_image_get_pixel(cat_image_t const* const p_image, cat_pixel_color_t* const p_pixel_color, int32_t const pos_x, int32_t const pos_y);
+cat_decl bool cat_image_get_pixel(cat_pixel_color_t* const p_pixel_color_out, cat_image_t const* const p_image, int32_t const pos_x, int32_t const pos_y);
+
+//! \fn cat_viewport_init
+//! \brief Initialize viewport descriptor representing viewing plane in scene.
+//! \param viewport_height Height of viewing plane in scene units (positive).
+//! \param viewport_aspect Aspect ratio of viewing plane (width/height; can be negative).
+//! \param viewport_distance Distance from viewer to viewing plane in scene units (positive).
+cat_decl bool cat_viewport_init(cat_viewport_t* const p_viewport, float const viewport_height, float const viewport_aspect, float const viewport_distance);
+
+//! \fn cat_viewport_pos
+//! \brief Compute position on viewing plane given image coordinage.
+//! \param pos_out Output position in scene units (XYZ -> right, down, forward).
+//! \param p_viewport Pointer to viewport descriptor.
+//! \param p_image Pointer to active image descriptor (all fields are non-zero).
+//! \param pos_x Horizontal position of pixel in image; zero is left edge.
+//! \param pos_y Vertical position of pixel; zero is top edge.
+//! \return True if computed successfully.
+cat_decl bool cat_viewport_pos(float pos_out[3], cat_viewport_t const* const p_viewport, cat_image_t const* const p_image, int32_t const pos_x, int32_t const pos_y);
 
 
 cat_interface_end;
