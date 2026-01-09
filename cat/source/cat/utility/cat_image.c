@@ -20,6 +20,7 @@
 */
 
 #include "cat/utility/cat_image.h"
+#include "cat/cat_cstdext.h"
 #include "cat/cat_platform.inl"
 
 #include <string.h>
@@ -33,6 +34,9 @@
 //// Define to use column-major processing.
 //// Image processing is typically line-by-line, which is row-major.
 //#define CAT_IMAGE_USE_COL_MAJOR
+
+// Define to use 16-bit colors with NetPBM images.
+#define CAT_IMAGE_USE_NETPBM_16BIT
 
 
 cat_implementation_begin;
@@ -97,6 +101,15 @@ static inline uint16_t cat_image_internal_pixel_color_a(cat_pixel_color_t const 
 }
 
 
+static inline uint16_t cat_image_internal_correct_endianness(uint16_t x)
+{
+#ifdef CAT_LITTLE_ENDIAN
+    x = cat_swap_bytes_u16(x);
+#endif // #ifdef CAT_LITTLE_ENDIAN
+    return x;
+}
+
+
 cat_impl bool cat_image_create(cat_image_t* const p_image, uint32_t const image_width, uint32_t const image_height)
 {
     size_t data_size = 0;
@@ -139,11 +152,26 @@ cat_impl bool cat_image_save_netpbm(cat_image_t const* const p_image, cstr_t con
     char file_path_noext[256] = "";
     char file_path[256] = "";
     FILE* fp = NULL;
+
+    char line_str[156]  = "";
+    size_t line_str_len = 0;
+
     uint32_t row = UINT32_MAX;
     uint32_t col = UINT32_MAX;
-
     cat_pixel_color_t pixel_color;
-    uint16_t rgb[3], a;
+
+    uint16_t rgba[4] = { 0 };
+#ifdef CAT_IMAGE_USE_NETPBM_16BIT
+    uint16_t rgba_out[4] = { 0 };
+    uint32_t const channel_max = UINT16_MAX;
+#else // #ifdef CAT_IMAGE_USE_NETPBM_16BIT
+    uint8_t rgba_out[4] = { 0 };
+    uint32_t const channel_max = UINT8_MAX;
+#endif // #else // #ifdef CAT_IMAGE_USE_NETPBM_16BIT
+
+    char const ppm_magic = '6';
+    char const pgm_magic = '5';
+
 
     assert_or_bail(p_image) false;
     assert_or_bail(p_image->image_width != 0) false;
@@ -166,18 +194,34 @@ cat_impl bool cat_image_save_netpbm(cat_image_t const* const p_image, cstr_t con
     fp = fopen(file_path, "wb");
     if (fp == NULL)
         return false;
+
+    // Common binary header.
+    snprintf(line_str, sizeof(line_str),
+        "PX %"PRIu32" %"PRIu32" %"PRIu32"\n",
+        p_image->image_width, p_image->image_height, channel_max);
+    line_str_len = strnlen(line_str, sizeof(line_str));
     
     // PPM binary header.
-    fprintf(fp, "P6\n%"PRIu32" %"PRIu32"\n65535\n", p_image->image_width, p_image->image_height);
+    line_str[1] = ppm_magic;
+    fwrite(line_str, 1, line_str_len, fp);
     for (row = 0; (row < p_image->image_height) != 0; ++row)
     {
         for (col = 0; (col < p_image->image_width) != 0; ++col)
         {
             cat_image_get_pixel(p_image, &pixel_color, col, row);
-            rgb[0] = cat_image_internal_pixel_color_r(pixel_color);
-            rgb[1] = cat_image_internal_pixel_color_g(pixel_color);
-            rgb[2] = cat_image_internal_pixel_color_b(pixel_color);
-            fwrite(rgb, sizeof(uint16_t), 3, fp);
+            rgba[0] = cat_image_internal_pixel_color_r(pixel_color);
+            rgba[1] = cat_image_internal_pixel_color_g(pixel_color);
+            rgba[2] = cat_image_internal_pixel_color_b(pixel_color);
+#ifdef CAT_IMAGE_USE_NETPBM_16BIT
+            rgba_out[0] = cat_image_internal_correct_endianness(rgba[0]);
+            rgba_out[1] = cat_image_internal_correct_endianness(rgba[1]);
+            rgba_out[2] = cat_image_internal_correct_endianness(rgba[2]);
+#else // #ifdef CAT_IMAGE_USE_NETPBM_16BIT
+            rgba_out[0] = rgba[0] >> 8;
+            rgba_out[1] = rgba[1] >> 8;
+            rgba_out[2] = rgba[2] >> 8;
+#endif // #else // #ifdef CAT_IMAGE_USE_NETPBM_16BIT
+            fwrite(rgba_out, sizeof(*rgba_out), 3, fp);
         }
     }
 
@@ -194,14 +238,20 @@ cat_impl bool cat_image_save_netpbm(cat_image_t const* const p_image, cstr_t con
         return false;
 
     // PGM binary header.
-    fprintf(fp, "P5\n%"PRIu32" %"PRIu32"\n65535\n", p_image->image_width, p_image->image_height);
+    line_str[1] = pgm_magic;
+    fwrite(line_str, 1, line_str_len, fp);
     for (row = 0; (row < p_image->image_height) != 0; ++row)
     {
         for (col = 0; (col < p_image->image_width) != 0; ++col)
         {
             cat_image_get_pixel(p_image, &pixel_color, col, row);
-            a = cat_image_internal_pixel_color_a(pixel_color);
-            fwrite(&a, sizeof(uint16_t), 1, fp);
+            rgba[3] = cat_image_internal_pixel_color_a(pixel_color);
+#ifdef CAT_IMAGE_USE_NETPBM_16BIT
+            rgba_out[3] = cat_image_internal_correct_endianness(rgba[3]);
+#else // #ifdef CAT_IMAGE_USE_NETPBM_16BIT
+            rgba_out[3] = rgba[3] >> 8;
+#endif // #else // #ifdef CAT_IMAGE_USE_NETPBM_16BIT
+            fwrite(&rgba_out[3], sizeof(*rgba_out), 1, fp);
         }
     }
 

@@ -168,6 +168,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\source\cat\cat.c" />
+    <ClCompile Include="..\..\..\source\cat\cat_cstdext.c" />
     <ClCompile Include="..\..\..\source\cat\utility\cat_console.c" />
     <ClCompile Include="..\..\..\source\cat\utility\cat_image.c" />
     <ClCompile Include="..\..\..\source\cat\utility\cat_memory.c" />
@@ -176,6 +177,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\cat\cat.h" />
+    <ClInclude Include="..\..\..\include\cat\cat_cstdext.h" />
     <ClInclude Include="..\..\..\include\cat\cat_platform.h" />
     <ClInclude Include="..\..\..\include\cat\utility\cat_console.h" />
     <ClInclude Include="..\..\..\include\cat\utility\cat_image.h" />

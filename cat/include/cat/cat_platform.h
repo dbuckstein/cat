@@ -39,6 +39,12 @@
 #define CAT_DEBUG 1
 #endif // #else // #ifdef NDEBUG
 
+#ifdef _WIN32
+#define CAT_LITTLE_ENDIAN 1
+#else // #ifdef _WIN32
+#define CAT_UNKNOWN_ENDIAN 1
+#endif // #else // #ifdef _WIN32
+
 #ifdef __cplusplus
 #define cat_interface_begin extern "C" {
 #define cat_interface_end   } // extern "C"
