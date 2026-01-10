@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////////////
-/// Copyright 2025 Daniel S. Buckstein
+/// Copyright 2025-2026 Daniel S. Buckstein
 /// 
 /// Licensed under the Apache License, Version 2.0 (the "License");
 /// you may not use this file except in compliance with the License.
@@ -38,6 +38,12 @@
 #else // #ifdef NDEBUG
 #define CAT_DEBUG 1
 #endif // #else // #ifdef NDEBUG
+
+#ifdef _WIN32
+#define CAT_LITTLE_ENDIAN 1
+#else // #ifdef _WIN32
+#define CAT_UNKNOWN_ENDIAN 1
+#endif // #else // #ifdef _WIN32
 
 #ifdef __cplusplus
 #define cat_interface_begin extern "C" {

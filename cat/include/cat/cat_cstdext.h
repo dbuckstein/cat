@@ -14,28 +14,33 @@
 /// limitations under the License.
 ////////////////////////////////////////////////////////////////////////////////
 
-/*
-* cat.c
-* Main test file.
+/*! \file cat_cstdext.h
+*   \brief C standard library common extensions.
 */
 
-#include "cat/cat.h"
+#ifndef _CAT_CSTDEXT_H_
+#define _CAT_CSTDEXT_H_
 
 
-extern void cat_time_test(void);
-extern void cat_console_test(void);
-extern void cat_memory_test(void);
-extern void cat_thread_test(void);
-extern void cat_image_test(void);
+#include "cat/cat_platform.h"
 
 
-cat_noinl int cat_test_all(int const argc, char const* const argv[])
-{
-    unused2(argc, argv);
-    cat_time_test();
-    cat_console_test();
-    cat_memory_test();
-    cat_thread_test();
-    cat_image_test();
-    return 0;
-}
+cat_interface_begin;
+
+
+//! \fn cat_little_endian
+//! \brief Determine if current platform is little-endian.
+//! \return True if platform is little-endian.
+cat_decl bool cat_little_endian(void);
+
+//! \fn cat_swap_bytes_u16
+//! \brief Swap bytes of 16-bit unsigned integer.
+//! \param x Integer.
+//! \return Integer with bytes swapped.
+cat_decl uint16_t cat_swap_bytes_u16(uint16_t const x);
+
+
+cat_interface_end;
+
+
+#endif // #ifndef _CAT_CSTDEXT_H_

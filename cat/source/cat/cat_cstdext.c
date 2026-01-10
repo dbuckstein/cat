@@ -15,27 +15,27 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
-* cat.c
-* Main test file.
+* cat_cstdext.c
+* C standard library common extensions implementation.
 */
 
-#include "cat/cat.h"
+#include "cat/cat_cstdext.h"
+#include "cat/cat_platform.inl"
 
 
-extern void cat_time_test(void);
-extern void cat_console_test(void);
-extern void cat_memory_test(void);
-extern void cat_thread_test(void);
-extern void cat_image_test(void);
+cat_implementation_begin;
 
 
-cat_noinl int cat_test_all(int const argc, char const* const argv[])
+cat_impl bool cat_little_endian(void)
 {
-    unused2(argc, argv);
-    cat_time_test();
-    cat_console_test();
-    cat_memory_test();
-    cat_thread_test();
-    cat_image_test();
-    return 0;
+    static const uint16_t x = 0x0001;
+    return (*((uint8_t const*)&x) == 0x01);
 }
+
+cat_impl uint16_t cat_swap_bytes_u16(uint16_t const x)
+{
+    return ((x >> 8) | (x << 8));
+}
+
+
+cat_implementation_end;
