@@ -51,6 +51,7 @@ typedef struct cat_viewport_s
     float viewport_height;  //< Height of viewing plane in scene units.
     float viewport_aspect;  //< Aspect ratio of viewing plane (width/height).
     float viewport_distance;//< Distance from viewer to viewing plane in scene units.
+    float viewport_fov_deg; //< Field of view in degrees.
 } cat_viewport_t;
 
 
@@ -123,7 +124,7 @@ cat_decl bool cat_image_get_pixel(cat_pixel_color_t* const p_pixel_color_out, ca
 cat_decl bool cat_viewport_init(cat_viewport_t* const p_viewport, float const viewport_height, float const viewport_aspect, float const viewport_distance);
 
 //! \fn cat_viewport_pos
-//! \brief Compute position on viewing plane given image coordinage.
+//! \brief Compute position on viewing plane given image coordinate.
 //! \param pos_out Output position in scene units (XYZ -> right, down, forward).
 //! \param p_viewport Pointer to viewport descriptor.
 //! \param p_image Pointer to active image descriptor (all fields are non-zero).
@@ -131,6 +132,16 @@ cat_decl bool cat_viewport_init(cat_viewport_t* const p_viewport, float const vi
 //! \param pos_y Vertical position of pixel; zero is top edge.
 //! \return True if computed successfully.
 cat_decl bool cat_viewport_pos(float pos_out[3], cat_viewport_t const* const p_viewport, cat_image_t const* const p_image, int32_t const pos_x, int32_t const pos_y);
+
+//! \fn cat_viewport_pos_precise
+//! \brief Compute position on viewing plane given fractional image coordinate.
+//! \param pos_out Output position in scene units (XYZ -> right, down, forward).
+//! \param p_viewport Pointer to viewport descriptor.
+//! \param p_image Pointer to active image descriptor (all fields are non-zero).
+//! \param pos_x Horizontal position of pixel in image; zero is left edge.
+//! \param pos_y Vertical position of pixel; zero is top edge.
+//! \return True if computed successfully.
+cat_decl bool cat_viewport_pos_precise(float pos_out[3], cat_viewport_t const* const p_viewport, cat_image_t const* const p_image, float const pos_x, float const pos_y);
 
 
 cat_interface_end;

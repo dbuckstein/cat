@@ -25,6 +25,9 @@
 
 #include <string.h>
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 #ifdef _WIN32
 #include <Windows.h>
 #else // #ifdef _WIN32
@@ -365,9 +368,10 @@ cat_impl bool cat_viewport_init(cat_viewport_t* const p_viewport, float const vi
     assert_or_bail(viewport_height > 0.0F) false;
     assert_or_bail(viewport_distance > 0.0F) false;
 
-    p_viewport->viewport_height = viewport_height;
-    p_viewport->viewport_aspect = viewport_aspect;
+    p_viewport->viewport_height   = viewport_height;
+    p_viewport->viewport_aspect   = viewport_aspect;
     p_viewport->viewport_distance = viewport_distance;
+    p_viewport->viewport_fov_deg  = atan2f(viewport_height * 0.5F, viewport_distance) * (float)(M_PI / 180.0);
 
     return true;
 }
@@ -386,8 +390,29 @@ cat_impl bool cat_viewport_pos(float pos_out[3], cat_viewport_t const* const p_v
     else
         factor = +factor * p_viewport->viewport_height;
 
-    pos_out[0] = (((float)pos_x * p_image->image_width_inv) * 2.0F - 1.0F) * factor * p_viewport->viewport_aspect;
+    pos_out[0] = (((float)pos_x * p_image->image_width_inv ) * 2.0F - 1.0F) * factor * p_viewport->viewport_aspect;
     pos_out[1] = (((float)pos_y * p_image->image_height_inv) * 2.0F - 1.0F) * factor;
+    pos_out[2] = p_viewport->viewport_distance;
+
+    return true;
+}
+
+cat_impl bool cat_viewport_pos_precise(float pos_out[3], cat_viewport_t const* const p_viewport, cat_image_t const* const p_image, float const pos_x, float const pos_y)
+{
+    float factor = 0.5F;
+    assert_or_bail(pos_out) false;
+    assert_or_bail(p_viewport) false;
+    assert_or_bail(cat_image_valid(p_image)) false;
+    assert_or_bail(((int32_t)pos_x >= 0) && ((int32_t)pos_x < (int32_t)p_image->image_width)) false;
+    assert_or_bail(((int32_t)pos_y >= 0) && ((int32_t)pos_y < (int32_t)p_image->image_height)) false;
+
+    if (p_viewport->viewport_aspect < 0.0F)
+        factor = -factor * p_viewport->viewport_height;
+    else
+        factor = +factor * p_viewport->viewport_height;
+
+    pos_out[0] = ((pos_x * p_image->image_width_inv ) * 2.0F - 1.0F) * factor * p_viewport->viewport_aspect;
+    pos_out[1] = ((pos_y * p_image->image_height_inv) * 2.0F - 1.0F) * factor;
     pos_out[2] = p_viewport->viewport_distance;
 
     return true;
