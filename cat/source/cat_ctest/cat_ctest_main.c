@@ -21,9 +21,29 @@
 
 #include "cat/cat.h"
 
+#include "cat/cat_platform.inl"
 
-extern int cat_test_all(int const argc, char const* const argv[]);
+// Disable QSpectre mitigation only if it becomes a real problem!
+#ifdef _WIN32
+#ifdef CAT_RELEASE
+//#pragma warning(disable: 5045)
+#endif // #ifdef CAT_RELEASE
+#endif // #ifdef _WIN32
 
+
+void cat_raytracing_image(void)
+{
+
+}
+
+
+//extern int cat_test_all(int const argc, char const* const argv[]);
+int cat_test_raytracing(int const argc, char const* const argv[])
+{
+    cat_raytracing_image();
+    unused2(argc, argv);
+    return 0;
+}
 
 int main(int const argc, char const* const argv[])
 {
@@ -31,6 +51,7 @@ int main(int const argc, char const* const argv[])
 #ifdef _WIN32
     _set_error_mode(_OUT_TO_MSGBOX);
 #endif // #ifdef _WIN32
-    result |= cat_test_all(argc, argv);
+    result |= cat_test_raytracing(argc, argv);
+    //result |= cat_test_all(argc, argv);
     return result;
 }
