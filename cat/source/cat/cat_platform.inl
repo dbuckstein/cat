@@ -24,11 +24,23 @@
 
 
 #include <stdio.h>
+#include <string.h>
 #include <assert.h>
 #include <inttypes.h>
 
 
-#define require_or_bail(expression)  if (!(expression)) return
+#define memclr(p,sz) memset(p,0x00,sz)
+
+
+#define cond_true(cond)     ((cond) == true)
+#define cond_false(cond)    ((cond) == false)
+#define cond_valid(cond)    (cond_true(cond) || cond_false(cond))
+#define cond_ntrue(cond)    ((cond) != true)
+#define cond_nfalse(cond)   ((cond) != false)
+#define cond_nvalid(cond)   (cond_ntrue(cond) && cond_nfalse(cond))
+
+
+#define require_or_bail(expression)  if (cond_false(expression)) return
 #define assert_or_bail(expression)   assert(expression);require_or_bail(expression)
 #define assert_or_unused(expression) assert(expression);unused(expression)
 
