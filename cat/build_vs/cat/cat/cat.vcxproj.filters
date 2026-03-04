@@ -42,6 +42,9 @@
     <ClCompile Include="..\..\..\source\cat\cat_cstdext.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\source\cat\utility\cat_vector.c">
+      <Filter>Source Files\utility</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\include\cat\cat.h">
@@ -67,6 +70,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\include\cat\cat_cstdext.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\include\cat\utility\cat_vector.h">
+      <Filter>Header Files\utility</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

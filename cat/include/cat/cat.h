@@ -28,6 +28,7 @@
 #include "cat/utility/cat_memory.h"
 #include "cat/utility/cat_thread.h"
 #include "cat/utility/cat_image.h"
+#include "cat/utility/cat_vector.h"
 
 
 #endif // #ifndef _CAT_H_
