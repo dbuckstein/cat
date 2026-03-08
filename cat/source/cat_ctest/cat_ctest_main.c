@@ -547,6 +547,9 @@ cat_decl void brdf_default(vec3f_t* const brdf_out, vec3f_t const* const v_posit
         vec3_t albedo;
         real_t dot_nl;
 
+        vec3_t v_reflect;
+        real_t dot_rv;
+
         // Use normal for albedo.
         real_t const r = fmadf(0.5F, v_normal->x, 0.5F);
         real_t const g = fmadf(0.5F, v_normal->y, 0.5F);
@@ -556,11 +559,18 @@ cat_decl void brdf_default(vec3f_t* const brdf_out, vec3f_t const* const v_posit
         // Lambertian coefficient: k_diffuse = (n.l)
         dot_nl = vec3f_dot(v_normal, v_light);
 
+        // Reflection: reflect(n,l) = l - 2(n.l)n
+        // Simple Phong reflectance: k_specular = (r.v)^a
+        vec3f_mad(&v_reflect, v_light, v_normal, -2.0F * dot_nl);
+        dot_rv = vec3f_dot(&v_reflect, v_view);
+        dot_nl = max(0.0F, dot_nl);
+        dot_rv = max(0.0F, dot_rv);
+        dot_rv *= dot_rv;
+
         // Result.
         vec3f_mul(brdf_out, &albedo, dot_nl);
 
         unused(v_position);
-        unused(v_view);
     }
 
     //// TEST
@@ -602,6 +612,9 @@ cat_decl void trace_ray_vs_scene(vec3f_t* const color_out, ray_t const* const p_
         // BRDF result.
         vec3_t brdf;
 
+        // View vector.
+        vec3_t v;
+
         // Ray hit result.
         ray_hit_t ray_hit;
 
@@ -624,7 +637,8 @@ cat_decl void trace_ray_vs_scene(vec3f_t* const color_out, ray_t const* const p_
 
         // Default recursive scattering behavior.
         ray_lambertian(&ray, &ray_hit);
-        brdf_default(&brdf, &ray_hit.position, &ray_hit.normal, NULL, &ray.direction);
+        vec3f_negate(&v, &p_ray->direction);
+        brdf_default(&brdf, &ray_hit.position, &ray_hit.normal, &v, &ray.direction);
         trace_ray_vs_scene(&color, &ray, p_scene, recursive_depth - 1);
 
         // Attenuate.
