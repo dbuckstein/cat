@@ -596,21 +596,51 @@ cat_decl void trace_ray_vs_scene(vec3f_t* const color_out, ray_t const* const p_
     //  -> This may be recursive.
     //  -> Bonus opportunities for creativity.
     {
-        color_bg(color_out, p_ray);
+        // Attenuation color.
+        vec3_t color = vec3s(0);
+
+        // BRDF result.
+        vec3_t brdf;
+
+        // Ray hit result.
+        ray_hit_t ray_hit;
+
+        // New ray.
+        ray_t ray;
+
+        // Ray expired.
         if (recursive_depth == 0)
+        {
+            vec3f_cpy(color_out, &color);
             return;
+        }
+
+        // Ray missed.
+        if (!ray_vs_scene(&ray_hit, p_ray, p_scene))
+        {
+            color_bg(color_out, p_ray);
+            return;
+        }
+
+        // Default recursive scattering behavior.
+        ray_lambertian(&ray, &ray_hit);
+        brdf_default(&brdf, &ray_hit.position, &ray_hit.normal, NULL, &ray.direction);
+        trace_ray_vs_scene(&color, &ray, p_scene, recursive_depth - 1);
+
+        // Attenuate.
+        vec3f_mulc(color_out, &color, &brdf);
     }
 
-    // TEST
-    {
-        ray_hit_t ray_hit;
-        if (ray_vs_scene(&ray_hit, p_ray, p_scene))
-        {
-            ray_t ray;
-            ray_lambertian(&ray, &ray_hit);
-            brdf_default(color_out, &ray_hit.position, &ray_hit.normal, NULL, &ray.direction);
-        }
-    }
+    //// TEST
+    //{
+    //    ray_hit_t ray_hit;
+    //    if (ray_vs_scene(&ray_hit, p_ray, p_scene))
+    //    {
+    //        ray_t ray;
+    //        ray_lambertian(&ray, &ray_hit);
+    //        brdf_default(color_out, &ray_hit.position, &ray_hit.normal, NULL, &ray.direction);
+    //    }
+    //}
 
     //unused(color_out);
     //unused(p_ray);
