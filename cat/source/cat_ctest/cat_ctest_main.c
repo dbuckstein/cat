@@ -544,17 +544,34 @@ cat_decl void brdf_default(vec3f_t* const brdf_out, vec3f_t const* const v_posit
     //  -> You may implement additional support functions.
     //  -> Bonus opportunities for creativity.
     {
+        vec3_t albedo;
+        real_t dot_nl;
+
+        // Use normal for albedo.
+        real_t const r = fmadf(0.5F, v_normal->x, 0.5F);
+        real_t const g = fmadf(0.5F, v_normal->y, 0.5F);
+        real_t const b = fmadf(0.5F, v_normal->z, 0.5F);
+        vec3f_set(&albedo, r, g, b);
+
+        // Lambertian coefficient: k_diffuse = (n.l)
+        dot_nl = vec3f_dot(v_normal, v_light);
+
+        // Result.
+        vec3f_mul(brdf_out, &albedo, dot_nl);
+
+        unused(v_position);
+        unused(v_view);
     }
 
-    // TEST
-    {
-        real_t test = v_position->x * 0.01F;
-        vec3f_set(brdf_out, test, test, test);
-    }
+    //// TEST
+    //{
+    //    real_t test = v_position->x * 0.01F;
+    //    vec3f_set(brdf_out, test, test, test);
+    //}
 
     //unused(brdf_out);
-    unused2(v_position, v_normal);
-    unused2(v_view, v_light);
+    //unused2(v_position, v_normal);
+    //unused2(v_view, v_light);
 }
 
 
@@ -588,7 +605,11 @@ cat_decl void trace_ray_vs_scene(vec3f_t* const color_out, ray_t const* const p_
     {
         ray_hit_t ray_hit;
         if (ray_vs_scene(&ray_hit, p_ray, p_scene))
-            brdf_default(color_out, &ray_hit.position, NULL, NULL, NULL);
+        {
+            ray_t ray;
+            ray_lambertian(&ray, &ray_hit);
+            brdf_default(color_out, &ray_hit.position, &ray_hit.normal, NULL, &ray.direction);
+        }
     }
 
     //unused(color_out);
