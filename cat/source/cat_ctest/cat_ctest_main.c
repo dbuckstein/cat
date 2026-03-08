@@ -324,12 +324,45 @@ cat_decl bool sphere_test_ray(sphere_ray_data_t* const p_data_out, ray_t const* 
     //  -> Draw a diagram to visualize the problem or write your process here.
     //  -> Hint: begin with the mathematical condition describing when a point
     //      on the sphere and a point on the ray are equal.
-    unused(p_data_out);
-    unused(p_ray);
-    unused(p_sphere);
-    return false;
+    {
+        // |P(t) - Q| = r
+        // |P(0) + pt - Q|^2 = r^2
+        //  s = P(0) - Q
+        // (s + pt).(s + pt) = r^2
+        // s.s + 2s.pt + p.pt^2 - r^2 = 0
+        // 0 = (p.p)t^2 + 2(p.s)t + ((s.s) - r^2)
+        // t = (-b +/- sqrt(b^2 - 4ac))/2a
+        //  a = p.p
+        //  b = 2p.s
+        //  c = s.s - r^2
+        // t = (-2p.s +/- sqrt(4(p.s)^2 - 4(p.p)(s.s - r^2)))/2(p.p)
+        // t_near = (p.(-s) - sqrt((p.s)^2 - (p.p)(s.s - r^2)))/(p.p)
+
+        vec3_t s;
+        real_t a, b, c, d;
+
+        vec3f_sub(&s, &p_sphere->origin, &p_ray->origin);
+        a = p_ray->magnitude.xx;
+        b = vec3f_dot(&p_ray->direction, &s);
+        c = vec3f_lensq(&s) - p_sphere->radius.xx;
+        d = b * b - c;
+
+        if (d < 0.0F)
+            return false;
+
+        d = fsqrtf(d);
+        p_data_out->param_near = (b - d) / a;
+        p_data_out->param_far  = (b + d) / a;
+        
+        return true;
+    }
+
+    //unused(p_data_out);
+    //unused(p_ray);
+    //unused(p_sphere);
+    //return false;
 }
-cat_decl void sphere_compute_normal(vec3_t* const v_normal_out, vec3_t* const v_position, sphere_t const* const p_sphere)
+cat_decl void sphere_compute_normal(vec3_t* const v_normal_out, vec3_t const* const v_position, sphere_t const* const p_sphere)
 {
     assert_or_bail(v_normal_out);
     assert_or_bail(v_position);
@@ -510,7 +543,16 @@ cat_decl void brdf_default(vec3f_t* const brdf_out, vec3f_t const* const v_posit
     //      "v_light"    - light or source direction (inbound light direction, points towards source)
     //  -> You may implement additional support functions.
     //  -> Bonus opportunities for creativity.
-    unused(brdf_out);
+    {
+    }
+
+    // TEST
+    {
+        real_t test = v_position->x * 0.01F;
+        vec3f_set(brdf_out, test, test, test);
+    }
+
+    //unused(brdf_out);
     unused2(v_position, v_normal);
     unused2(v_view, v_light);
 }
@@ -536,11 +578,24 @@ cat_decl void trace_ray_vs_scene(vec3f_t* const color_out, ray_t const* const p_
     //  -> Test scene; generate color if hit, otherwise output background.
     //  -> This may be recursive.
     //  -> Bonus opportunities for creativity.
-    unused(color_out);
-    unused(p_ray);
-    unused(p_scene);
-    unused(recursive_depth);
-    color_bg(color_out, p_ray);
+    {
+        color_bg(color_out, p_ray);
+        if (recursive_depth == 0)
+            return;
+    }
+
+    // TEST
+    {
+        ray_hit_t ray_hit;
+        if (ray_vs_scene(&ray_hit, p_ray, p_scene))
+            brdf_default(color_out, &ray_hit.position, NULL, NULL, NULL);
+    }
+
+    //unused(color_out);
+    //unused(p_ray);
+    //unused(p_scene);
+    //unused(recursive_depth);
+    //color_bg(color_out, p_ray);
 }
 
 
